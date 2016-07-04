@@ -92,3 +92,8 @@ obj-$(CONFIG_MLX_PLATFORM)	+= mlx-platform.o
 obj-$(CONFIG_INTEL_TURBO_MAX_3) += intel_turbo_max_3.o
 obj-$(CONFIG_INTEL_CHTDC_TI_PWRBTN)	+= intel_chtdc_ti_pwrbtn.o
 obj-$(CONFIG_I2C_MULTI_INSTANTIATE)	+= i2c-multi-instantiate.o
+obj-$(CONFIG_UP_BOARD)		+= up_board.o \
+				   up_board_cpld.o \
+				   up_board_pinctrl.o \
+				   up_board_gpio.o \
+				   up_board_leds.o

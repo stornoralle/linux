@@ -1229,6 +1229,18 @@ config I2C_MULTI_INSTANTIATE
 	  To compile this driver as a module, choose M here: the module
 	  will be called i2c-multi-instantiate.
 
+config UP_BOARD
+	bool "UP Board Platform I/O Driver"
+	depends on ACPI && PINCTRL_CHERRYVIEW
+	select GPIOLIB_IRQCHIP
+	select LEDS_CLASS
+	select NEW_LEDS
+	---help---
+	  This driver provides support for the platform functions on the UP
+	  board.  It includes platform, pinctrl and gpio drivers for the CPLD
+	  that manages the external pin header, as well as a driver for the
+	  built-in LEDs.
+
 endif # X86_PLATFORM_DEVICES
 
 config PMC_ATOM
