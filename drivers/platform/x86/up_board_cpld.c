@@ -111,11 +111,11 @@ static int up_board_cpld_reg_set_bit(struct up_board_cpld *cpld,
 				     unsigned int offset, int value);
 
 static struct up_board_cpld up_board_cpld = {
-	.strobe_gpio		= SOC_GPIO_OUTPUT(SOC_GC_N, 21),
-	.reset_gpio		= SOC_GPIO_OUTPUT(SOC_GC_E, 15),
-	.data_in_gpio		= SOC_GPIO_OUTPUT(SOC_GC_E, 13),
-	.data_out_gpio		= SOC_GPIO_INPUT(SOC_GC_E, 23),
-	.oe_gpio		= SOC_GPIO_OUTPUT(SOC_GC_SW, 43),
+	.strobe_gpio		= SOC_GPIO_OUTPUT(SOC_GC_N, 27),
+	.reset_gpio		= SOC_GPIO_OUTPUT(SOC_GC_E, 18),
+	.data_in_gpio		= SOC_GPIO_OUTPUT(SOC_GC_E, 16),
+	.data_out_gpio		= SOC_GPIO_INPUT(SOC_GC_E, 26),
+	.oe_gpio		= SOC_GPIO_OUTPUT(SOC_GC_SW, 64),
 	.dir_reg		= CPLD_DIR_REG_INIT,
 	.dir_reg_size		= 34,
 };
@@ -154,34 +154,34 @@ static struct up_board_pin_info up_board_pins[] = {
 
 /* SoC GPIO mapping for the 28 GPIO pins on the UP Board I/O header */
 static struct up_board_gpio_info up_board_gpios[] = {
-	SOC_GPIO(SOC_GC_SW, 33, 0),	/*  0 */
-	SOC_GPIO(SOC_GC_SW, 37, 0),	/*  1 */
-	SOC_GPIO(SOC_GC_SW, 32, 0),	/*  2 */
-	SOC_GPIO(SOC_GC_SW, 35, 0),	/*  3 */
-	SOC_GPIO(SOC_GC_E,  18, 0),	/*  4 */
-	SOC_GPIO(SOC_GC_E,  21, 0),	/*  5 */
-	SOC_GPIO(SOC_GC_E,  12, 0),	/*  6 */
-	SOC_GPIO(SOC_GC_SE, 48, 0),	/*  7 */
+	SOC_GPIO(SOC_GC_SW, 61, 0),	/*  0 */
+	SOC_GPIO(SOC_GC_SW, 65, 0),	/*  1 */
+	SOC_GPIO(SOC_GC_SW, 60, 0),	/*  2 */
+	SOC_GPIO(SOC_GC_SW, 63, 0),	/*  3 */
+	SOC_GPIO(SOC_GC_E,  21, 0),	/*  4 */
+	SOC_GPIO(SOC_GC_E,  24, 0),	/*  5 */
+	SOC_GPIO(SOC_GC_E,  15, 0),	/*  6 */
+	SOC_GPIO(SOC_GC_SE, 79, 0),	/*  7 */
 	SOC_GPIO(SOC_GC_SE,  7, 0),	/*  8 */
 	SOC_GPIO(SOC_GC_SE,  3, 0),	/*  9 */
 	SOC_GPIO(SOC_GC_SE,  6, 0),	/* 10 */
 	SOC_GPIO(SOC_GC_SE,  4, 0),	/* 11 */
 	SOC_GPIO(SOC_GC_SE,  5, 0),	/* 12 */
 	SOC_GPIO(SOC_GC_SE,  1, 0),	/* 13 */
-	SOC_GPIO(SOC_GC_SW, 13, 0),	/* 14 */
-	SOC_GPIO(SOC_GC_SW,  9, 0),	/* 15 */
-	SOC_GPIO(SOC_GC_SW, 11, 0),	/* 16 */
-	SOC_GPIO(SOC_GC_SW,  8, 0),	/* 17 */
-	SOC_GPIO(SOC_GC_SW, 50, 0),	/* 18 */
-	SOC_GPIO(SOC_GC_SW, 54, 0),	/* 19 */
-	SOC_GPIO(SOC_GC_SW, 52, 0),	/* 20 */
-	SOC_GPIO(SOC_GC_SW, 55, 0),	/* 21 */
-	SOC_GPIO(SOC_GC_SE, 12, 0),	/* 22 */
-	SOC_GPIO(SOC_GC_SE, 15, 0),	/* 23 */
-	SOC_GPIO(SOC_GC_SE, 18, 0),	/* 24 */
-	SOC_GPIO(SOC_GC_SE, 11, 0),	/* 25 */
-	SOC_GPIO(SOC_GC_SE, 14, 0),	/* 26 */
-	SOC_GPIO(SOC_GC_SE,  8, 0),	/* 27 */
+	SOC_GPIO(SOC_GC_SW, 20, 0),	/* 14 */
+	SOC_GPIO(SOC_GC_SW, 16, 0),	/* 15 */
+	SOC_GPIO(SOC_GC_SW, 18, 0),	/* 16 */
+	SOC_GPIO(SOC_GC_SW, 15, 0),	/* 17 */
+	SOC_GPIO(SOC_GC_SW, 92, 0),	/* 18 */
+	SOC_GPIO(SOC_GC_SW, 96, 0),	/* 19 */
+	SOC_GPIO(SOC_GC_SW, 94, 0),	/* 20 */
+	SOC_GPIO(SOC_GC_SW, 97, 0),	/* 21 */
+	SOC_GPIO(SOC_GC_SE, 19, 0),	/* 22 */
+	SOC_GPIO(SOC_GC_SE, 22, 0),	/* 23 */
+	SOC_GPIO(SOC_GC_SE, 25, 0),	/* 24 */
+	SOC_GPIO(SOC_GC_SE, 18, 0),	/* 25 */
+	SOC_GPIO(SOC_GC_SE, 21, 0),	/* 26 */
+	SOC_GPIO(SOC_GC_SE, 15, 0),	/* 27 */
 };
 
 /* pinctrl descriptors for the 28 GPIO pins on the UP Board I/O header */
