@@ -112,7 +112,7 @@ static int up_gpio_request(struct gpio_chip *gc, unsigned int offset)
 	struct up_board_gpio_info *gpio = &up_gpio->pdata->gpios[offset];
 	int ret;
 
-	ret = pinctrl_request_gpio(gc->base + offset);
+	ret = pinctrl_gpio_request(gc->base + offset);
 	if (ret)
 		return ret;
 
@@ -131,7 +131,7 @@ static void up_gpio_free(struct gpio_chip *gc, unsigned int offset)
 	struct up_board_gpio *up_gpio = gpiochip_get_data(gc);
 	struct up_board_gpio_info *gpio = &up_gpio->pdata->gpios[offset];
 
-	pinctrl_free_gpio(gc->base + offset);
+	pinctrl_gpio_free(gc->base + offset);
 	gpio_free(gpio->soc_gpio);
 }
 
@@ -177,7 +177,7 @@ static int up_board_gpio_setup(struct up_board_gpio *up_gpio)
 		 * functions
 		 */
 		gpio->soc_gpio_irq = gpiod_to_irq(gpio->soc_gpiod);
-		gpio->irq = irq_find_mapping(up_gpio->chip.irqdomain, i);
+		gpio->irq = irq_create_mapping(up_gpio->chip.irq.domain, i);
 		irq_set_parent(gpio->irq, gpio->soc_gpio_irq);
 		irq_data = irq_get_irq_data(gpio->irq);
 		irq_data->parent_data = irq_get_irq_data(gpio->soc_gpio_irq);
