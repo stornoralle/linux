@@ -160,6 +160,7 @@ struct chv_pin_context {
  * @regs: MMIO registers
  * @intr_lines: Stores mapping between 16 HW interrupt wires and GPIO
  *		offset (in GPIO number space)
+ * @intr_used:  Bitmap of used interrupt wires
  * @community: Community this pinctrl instance represents
  *
  * The first group in @groups is expected to contain all pins that can be
@@ -172,6 +173,7 @@ struct chv_pinctrl {
 	struct gpio_chip chip;
 	void __iomem *regs;
 	unsigned intr_lines[16];
+	unsigned long intr_used;
 	const struct chv_community *community;
 	u32 saved_intmask;
 	struct chv_pin_context *saved_pin_context;
@@ -888,6 +890,7 @@ static int chv_gpio_request_enable(struct pinctrl_dev *pctldev,
 		for (i = 0; i < ARRAY_SIZE(pctrl->intr_lines); i++) {
 			if (pctrl->intr_lines[i] == offset) {
 				pctrl->intr_lines[i] = 0;
+				pctrl->intr_used &= ~BIT(i);
 				break;
 			}
 		}
@@ -1421,7 +1424,7 @@ static int chv_gpio_irq_type(struct irq_data *d, unsigned type)
 	struct chv_pinctrl *pctrl = gpiochip_get_data(gc);
 	unsigned pin = irqd_to_hwirq(d);
 	unsigned long flags;
-	u32 value;
+	u32 value, intsel;
 
 	raw_spin_lock_irqsave(&chv_lock, flags);
 
@@ -1460,6 +1463,20 @@ static int chv_gpio_irq_type(struct irq_data *d, unsigned type)
 
 		chv_writel(value, reg);
 	}
+
+	// Find a free interrupt line
+	intsel = ffz(pctrl->intr_used);
+	if (intsel >= pctrl->community->nirqs) {
+		raw_spin_unlock_irqrestore(&chv_lock, flags);
+		return -EBUSY;
+	}
+	pctrl->intr_used |= BIT(intsel);
+
+	// TODO don't forget to free allocated lines when possible!
+	value = readl(chv_padreg(pctrl, pin, CHV_PADCTRL0));
+	value &= ~CHV_PADCTRL0_INTSEL_MASK;
+	value |= intsel << CHV_PADCTRL0_INTSEL_SHIFT;
+	chv_writel(value, chv_padreg(pctrl, pin, CHV_PADCTRL0));
 
 	value = readl(chv_padreg(pctrl, pin, CHV_PADCTRL0));
 	value &= CHV_PADCTRL0_INTSEL_MASK;
