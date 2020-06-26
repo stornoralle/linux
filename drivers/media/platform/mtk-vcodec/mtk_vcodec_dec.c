@@ -54,16 +54,18 @@ static int vidioc_try_decoder_cmd(struct file *file, void *priv,
 								cmd);
 
 	switch (cmd->cmd) {
-	case V4L2_DEC_CMD_STOP:
 	case V4L2_DEC_CMD_START:
-		if (cmd->flags != 0) {
-			mtk_v4l2_err("cmd->flags=%u", cmd->flags);
-			return -EINVAL;
-		}
+		cmd->start.format = V4L2_DEC_START_FMT_NONE;
+		cmd->start.speed = 0;
+		break;
+	case V4L2_DEC_CMD_STOP:
 		break;
 	default:
 		return -EINVAL;
 	}
+
+	cmd->flags = 0;
+
 	return 0;
 }
 
