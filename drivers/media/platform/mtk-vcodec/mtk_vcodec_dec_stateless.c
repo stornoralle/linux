@@ -86,66 +86,21 @@ static const struct mtk_codec_framesizes mtk_vdec_framesizes[] = {
 
 #define NUM_SUPPORTED_FRAMESIZE ARRAY_SIZE(mtk_vdec_framesizes)
 
-static void mtk_vdec_stateless_out_to_done(struct mtk_vcodec_ctx *ctx,
-					   struct mtk_vcodec_mem *bs, int error)
+static void mtk_vdec_stateless_set_dst_payload(struct mtk_vcodec_ctx *ctx,
+					       struct vdec_fb *fb)
 {
-	struct mtk_video_dec_buf *out_buf;
-	struct vb2_v4l2_buffer *vb;
-
-	if (bs == NULL) {
-		mtk_v4l2_err("Free bitstream buffer fail.");
-		return;
-	}
-	out_buf = container_of(bs, struct mtk_video_dec_buf, bs_buffer);
-	vb = &out_buf->m2m_buf.vb;
-
-	mtk_v4l2_debug(2,
-		"Free bitsteam buffer id = %d to done_list",
-		vb->vb2_buf.index);
-
-	v4l2_m2m_src_buf_remove(ctx->m2m_ctx);
-	if (error) {
-		v4l2_m2m_buf_done(vb, VB2_BUF_STATE_ERROR);
-		if (error == -EIO)
-			out_buf->error = true;
-	} else
-		v4l2_m2m_buf_done(vb, VB2_BUF_STATE_DONE);
-}
-
-static void mtk_vdec_stateless_cap_to_disp(struct mtk_vcodec_ctx *ctx,
-					   struct vdec_fb *fb, int error)
-{
-	struct mtk_video_dec_buf *vdec_frame_buf;
-	struct vb2_v4l2_buffer *vb;
-	unsigned int cap_y_size = 0, cap_c_size = 0;
-
-	if (fb == NULL) {
-		mtk_v4l2_err("Free frame buffer fail.");
-		return;
-	}
-	vdec_frame_buf = container_of(fb, struct mtk_video_dec_buf,
-				      frame_buffer);
-	vb = &vdec_frame_buf->m2m_buf.vb;
-	if (error == 1) {
-		cap_y_size = 0;
-		cap_c_size = 0;
-	} else {
-		cap_y_size = ctx->q_data[MTK_Q_DATA_DST].sizeimage[0];
-		cap_c_size = ctx->q_data[MTK_Q_DATA_DST].sizeimage[1];
-	}
-
-	v4l2_m2m_dst_buf_remove(ctx->m2m_ctx);
+	struct mtk_video_dec_buf *vdec_frame_buf =
+		container_of(fb, struct mtk_video_dec_buf, frame_buffer);
+	struct vb2_v4l2_buffer *vb = &vdec_frame_buf->m2m_buf.vb;
+	unsigned int cap_y_size = ctx->q_data[MTK_Q_DATA_DST].sizeimage[0];
 
 	vb2_set_plane_payload(&vb->vb2_buf, 0, cap_y_size);
-	if (ctx->q_data[MTK_Q_DATA_DST].fmt->num_planes == 2)
-		vb2_set_plane_payload(&vb->vb2_buf, 1, cap_c_size);
+	if (ctx->q_data[MTK_Q_DATA_DST].fmt->num_planes == 2) {
+		unsigned int cap_c_size =
+			ctx->q_data[MTK_Q_DATA_DST].sizeimage[1];
 
-	mtk_v4l2_debug(2,
-		"Free frame buffer id = %d to done_list",
-		vb->vb2_buf.index);
-	if (error == 1)
-		vb->flags |= V4L2_BUF_FLAG_LAST;
-	v4l2_m2m_buf_done(vb, VB2_BUF_STATE_DONE);
+		vb2_set_plane_payload(&vb->vb2_buf, 1, cap_c_size);
+	}
 }
 
 static struct vdec_fb *vdec_get_cap_buffer(struct mtk_vcodec_ctx *ctx)
@@ -317,13 +272,12 @@ static void mtk_vdec_worker(struct work_struct *work)
 		}
 	}
 
-	mtk_vdec_stateless_out_to_done(ctx, buf, ret);
-	if (!ret)
-		mtk_vdec_stateless_cap_to_disp(ctx, dst_buf, 0);
+	mtk_vdec_stateless_set_dst_payload(ctx, dst_buf);
+
+	v4l2_m2m_buf_done_and_job_finish(dev->m2m_dev_dec, ctx->m2m_ctx,
+		ret ? VB2_BUF_STATE_ERROR : VB2_BUF_STATE_DONE);
 
 	v4l2_ctrl_request_complete(src_buf_req, &ctx->ctrl_hdl);
-
-	v4l2_m2m_job_finish(dev->m2m_dev_dec, ctx->m2m_ctx);
 }
 
 static void vb2ops_vdec_stateless_buf_queue(struct vb2_buffer *vb)
