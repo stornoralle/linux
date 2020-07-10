@@ -51,7 +51,6 @@ static const struct mtk_stateless_control mtk_stateless_controls[] = {
 		.codec_type = V4L2_PIX_FMT_H264_SLICE,
 	},
 };
-
 #define NUM_CTRLS ARRAY_SIZE(mtk_stateless_controls)
 
 static const struct mtk_video_fmt mtk_video_formats[] = {
@@ -66,7 +65,6 @@ static const struct mtk_video_fmt mtk_video_formats[] = {
 		.num_planes = 2,
 	},
 };
-
 #define NUM_FORMATS ARRAY_SIZE(mtk_video_formats)
 #define DEFAULT_OUT_FMT_IDX    0
 #define DEFAULT_CAP_FMT_IDX    1
@@ -74,8 +72,10 @@ static const struct mtk_video_fmt mtk_video_formats[] = {
 static const struct mtk_codec_framesizes mtk_vdec_framesizes[] = {
 	{
 		.fourcc	= V4L2_PIX_FMT_H264_SLICE,
-		.stepwise = {  MTK_VDEC_MIN_W, MTK_VDEC_MAX_W, 16,
-				MTK_VDEC_MIN_H, MTK_VDEC_MAX_H, 16 },
+		.stepwise = {
+			MTK_VDEC_MIN_W, MTK_VDEC_MAX_W, 16,
+			MTK_VDEC_MIN_H, MTK_VDEC_MAX_H, 16,
+		},
 	},
 	{
 		.fourcc	= V4L2_PIX_FMT_MM21,
