@@ -417,6 +417,9 @@ enum v4l2_vp9_frame_flags {
  * @tx_mode: specifies the TX mode. See &v4l2_vp9_tx_mode for more details
  * @reference_mode: specifies the type of inter prediction to be used. See
  *		    &v4l2_vp9_reference_mode for more details
+ * @ref_frame_sign_biases: intended direction in time of the motion vector for
+ *                         each reference frame (0: backward, 1: forward).
+ *                         Only the first V4L2_REF_ID_CNT are used.
  * @padding: needed to make this struct 64 bit aligned. Shall be filled with
  *	     zeros
  * @frame_width_minus_1: add 1 to it and you'll get the frame width expressed
@@ -450,7 +453,8 @@ struct v4l2_ctrl_vp9_frame_decode_params {
 	__u8 tile_rows_log2;
 	__u8 tx_mode;
 	__u8 reference_mode;
-	__u8 padding[6];
+	__u8 ref_frame_sign_biases;
+	__u8 padding[5];
 	__u16 frame_width_minus_1;
 	__u16 frame_height_minus_1;
 	__u16 render_width_minus_1;
