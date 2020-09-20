@@ -78,6 +78,7 @@ struct v4l2_vp9_loop_filter {
  * syntax' of the VP9 specification for more details.
  */
 struct v4l2_vp9_quantization {
+	/* TODO LOSSLESS flag missing? */
 	__u8 base_q_idx;
 	__s8 delta_q_y_dc;
 	__s8 delta_q_uv_dc;
@@ -185,6 +186,7 @@ struct v4l2_vp9_segmentation {
  *
  * See section '7.4.5 Intra frame mode info semantics' for more details.
  */
+// TODO where is this used??
 enum v4l2_vp9_intra_prediction_mode {
 	V4L2_VP9_INTRA_PRED_MODE_DC,
 	V4L2_VP9_INTRA_PRED_MODE_V,
