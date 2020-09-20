@@ -434,7 +434,8 @@ enum v4l2_vp9_frame_flags {
  *			 expressed in pixels. This is not used during the
  *			 decoding process but might be used by HW scalers to
  *			 prepare a frame that's ready for scanout
- * @refs: array of reference frames. See &v4l2_vp9_ref_id for more details
+ * @refs: array of reference frames, identified by timestamp. See
+          &v4l2_vp9_ref_id for more details
  * @lf: loop filter parameters. See &v4l2_vp9_loop_filter for more details
  * @quant: quantization parameters. See &v4l2_vp9_quantization for more details
  * @seg: segmentation parameters. See &v4l2_vp9_segmentation for more details
