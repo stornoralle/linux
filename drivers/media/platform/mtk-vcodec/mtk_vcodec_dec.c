@@ -236,18 +236,18 @@ static int vidioc_try_fmt(struct v4l2_format *f,
 
 	pix_fmt_mp->field = V4L2_FIELD_NONE;
 
-	pix_fmt_mp->width = clamp(pix_fmt_mp->width,
-				MTK_VDEC_MIN_W,
-				MTK_VDEC_MAX_W);
-	pix_fmt_mp->height = clamp(pix_fmt_mp->height,
-				MTK_VDEC_MIN_H,
-				MTK_VDEC_MAX_H);
-
 	if (f->type == V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE) {
 		pix_fmt_mp->num_planes = 1;
 		pix_fmt_mp->plane_fmt[0].bytesperline = 0;
 	} else if (f->type == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE) {
 		int tmp_w, tmp_h;
+
+		pix_fmt_mp->height = clamp(pix_fmt_mp->height,
+					MTK_VDEC_MIN_H,
+					MTK_VDEC_MAX_H);
+		pix_fmt_mp->width = clamp(pix_fmt_mp->width,
+					MTK_VDEC_MIN_W,
+					MTK_VDEC_MAX_W);
 
 		/*
 		 * Find next closer width align 64, heign align 64, size align
@@ -811,7 +811,6 @@ void vb2ops_vdec_stop_streaming(struct vb2_queue *q)
 {
 	struct vb2_v4l2_buffer *src_buf = NULL, *dst_buf = NULL;
 	struct mtk_vcodec_ctx *ctx = vb2_get_drv_priv(q);
-	int ret;
 
 	mtk_v4l2_debug(3, "[%d] (%d) state=(%x) ctx->decoded_frame_cnt=%d",
 			ctx->id, q->type, ctx->state, ctx->decoded_frame_cnt);
@@ -849,9 +848,7 @@ void vb2ops_vdec_stop_streaming(struct vb2_queue *q)
 				ctx->last_decoded_picinfo.buf_w,
 				ctx->last_decoded_picinfo.buf_h);
 
-		ret = ctx->dev->vdec_pdata->flush_decoder(ctx);
-		if (ret)
-			mtk_v4l2_err("DecodeFinal failed, ret=%d", ret);
+		ctx->dev->vdec_pdata->flush_decoder(ctx);
 	}
 	ctx->state = MTK_STATE_FLUSH;
 

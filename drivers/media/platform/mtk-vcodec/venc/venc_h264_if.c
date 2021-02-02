@@ -670,7 +670,7 @@ static int h264_enc_set_param(void *handle,
 	case VENC_SET_PARAM_INTRA_PERIOD:
 		inst->frm_cnt = 0;
 		inst->skip_frm_cnt = 0;
-		/* fall through */
+		fallthrough;
 	default:
 		ret = vpu_enc_set_param(&inst->vpu_inst, type, enc_prm);
 		break;

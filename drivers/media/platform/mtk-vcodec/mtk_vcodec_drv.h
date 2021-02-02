@@ -335,7 +335,7 @@ struct mtk_vcodec_dec_pdata {
 	void (*init_vdec_params)(struct mtk_vcodec_ctx *ctx);
 	int (*ctrls_setup)(struct mtk_vcodec_ctx *ctx);
 	void (*worker)(struct work_struct *work);
-	int (*flush_decoder)(struct mtk_vcodec_ctx *ctx);
+	void (*flush_decoder)(struct mtk_vcodec_ctx *ctx);
 
 	struct vb2_ops *vdec_vb2_ops;
 
