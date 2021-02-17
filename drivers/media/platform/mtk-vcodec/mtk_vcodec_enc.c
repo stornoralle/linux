@@ -731,21 +731,6 @@ static int vidioc_encoder_cmd(struct file *file, void *priv,
 	return 0;
 }
 
-static int vidioc_subscribe_event(struct v4l2_fh *fh,
-				  const struct v4l2_event_subscription *sub)
-{
-	switch (sub->type) {
-	case V4L2_EVENT_EOS:
-		return v4l2_event_subscribe(fh, sub, 0, NULL);
-	default:
-		return v4l2_ctrl_subscribe_event(fh, sub);
-	}
-}
-
-static const struct v4l2_event venc_eos_event = {
-	.type = V4L2_EVENT_EOS
-};
-
 const struct v4l2_ioctl_ops mtk_venc_ioctl_ops = {
 	.vidioc_streamon		= v4l2_m2m_ioctl_streamon,
 	.vidioc_streamoff		= v4l2_m2m_ioctl_streamoff,
@@ -763,7 +748,7 @@ const struct v4l2_ioctl_ops mtk_venc_ioctl_ops = {
 	.vidioc_try_fmt_vid_cap_mplane	= vidioc_try_fmt_vid_cap_mplane,
 	.vidioc_try_fmt_vid_out_mplane	= vidioc_try_fmt_vid_out_mplane,
 	.vidioc_expbuf			= v4l2_m2m_ioctl_expbuf,
-	.vidioc_subscribe_event		= vidioc_subscribe_event,
+	.vidioc_subscribe_event		= v4l2_ctrl_subscribe_event,
 	.vidioc_unsubscribe_event	= v4l2_event_unsubscribe,
 
 	.vidioc_s_parm			= vidioc_venc_s_parm,
@@ -1191,10 +1176,19 @@ static void mtk_venc_worker(struct work_struct *work)
 
 	memset(&frm_buf, 0, sizeof(frm_buf));
 	for (i = 0; i < src_buf->vb2_buf.num_planes ; i++) {
+		/*
+		 * TODO(crbug.com/901264): The way to pass an offset within a
+		 * DMA-buf is not defined in V4L2 specification, so we abuse
+		 * data_offset for now. Fix it when we have the right interface,
+		 * including any necessary validation and potential alignment
+		 * issues.
+		 */
 		frm_buf.fb_addr[i].dma_addr =
-				vb2_dma_contig_plane_dma_addr(&src_buf->vb2_buf, i);
+			vb2_dma_contig_plane_dma_addr(&src_buf->vb2_buf, i) +
+			src_buf->planes[i].data_offset;
 		frm_buf.fb_addr[i].size =
-				(size_t)src_buf->vb2_buf.planes[i].length;
+				(size_t)src_buf->vb2_buf.planes[i].length -
+			src_buf->planes[i].data_offset;
 	}
 	bs_buf.va = vb2_plane_vaddr(&dst_buf->vb2_buf, 0);
 	bs_buf.dma_addr = vb2_dma_contig_plane_dma_addr(&dst_buf->vb2_buf, 0);
