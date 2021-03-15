@@ -411,6 +411,11 @@ const char * const *v4l2_ctrl_get_menu(u32 id)
 		"Frame-based",
 		NULL,
 	};
+	static const char * const h264_start_code[] = {
+		"No Start Code",
+		"Annex B Start Code",
+		NULL,
+	};
 	static const char * const mpeg_mpeg4_level[] = {
 		"0",
 		"0b",
@@ -629,6 +634,8 @@ const char * const *v4l2_ctrl_get_menu(u32 id)
 		return h264_fmo_map_type;
 	case V4L2_CID_STATELESS_H264_DECODE_MODE:
 		return h264_decoding_mode;
+	case V4L2_CID_STATELESS_H264_START_CODE:
+		return h264_start_code;
 	case V4L2_CID_MPEG_VIDEO_MPEG4_LEVEL:
 		return mpeg_mpeg4_level;
 	case V4L2_CID_MPEG_VIDEO_MPEG4_PROFILE:
