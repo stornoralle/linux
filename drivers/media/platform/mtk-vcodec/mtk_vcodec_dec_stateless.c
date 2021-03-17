@@ -143,12 +143,12 @@ static struct vdec_fb *vdec_get_cap_buffer(struct mtk_vcodec_ctx *ctx,
 	struct vb2_buffer *dst_buf = &vb2_v4l2->vb2_buf;
 
 	pfb = &framebuf->frame_buffer;
-	pfb->base_y.va = vb2_plane_vaddr(dst_buf, 0);
+	pfb->base_y.va = NULL;
 	pfb->base_y.dma_addr = vb2_dma_contig_plane_dma_addr(dst_buf, 0);
 	pfb->base_y.size = ctx->q_data[MTK_Q_DATA_DST].sizeimage[0];
 
 	if (ctx->q_data[MTK_Q_DATA_DST].fmt->num_planes == 2) {
-		pfb->base_c.va = vb2_plane_vaddr(dst_buf, 1);
+		pfb->base_c.va = NULL;
 		pfb->base_c.dma_addr =
 			vb2_dma_contig_plane_dma_addr(dst_buf, 1);
 		pfb->base_c.size = ctx->q_data[MTK_Q_DATA_DST].sizeimage[1];
@@ -271,15 +271,9 @@ static void mtk_vdec_worker(struct work_struct *work)
 			ctx->id, src_buf->vb2_queue->type,
 			src_buf->index, src_buf, src_buf_info);
 
-	bs_src->va = vb2_plane_vaddr(vb2_src, 0);
+	bs_src->va = NULL;
 	bs_src->dma_addr = vb2_dma_contig_plane_dma_addr(vb2_src, 0);
 	bs_src->size = (size_t)vb2_src->planes[0].bytesused;
-	if (!bs_src->va) {
-		v4l2_m2m_job_finish(dev->m2m_dev_dec, ctx->m2m_ctx);
-		mtk_v4l2_err("[%d] id=%d source buffer is NULL", ctx->id,
-			     vb2_src->index);
-		return;
-	}
 
 	mtk_v4l2_debug(3, "[%d] Bitstream VA=%p DMA=%pad Size=%zx vb=%p",
 			ctx->id, buf->va, &buf->dma_addr, buf->size, src_buf);
