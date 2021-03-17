@@ -446,7 +446,7 @@ static void fixup_ref_list(u8 *ref_list, size_t num_valid)
 	memset(&ref_list[num_valid], 0x20, 32 - num_valid);
 }
 
-static void get_vdec_decode_parameters(struct vdec_h264_slice_inst *inst)
+static u8 get_vdec_decode_parameters(struct vdec_h264_slice_inst *inst)
 {
 	const struct v4l2_ctrl_h264_decode_params *dec_params =
 		get_ctrl_ptr(inst->ctx, V4L2_CID_STATELESS_H264_DECODE_PARAMS);
@@ -483,6 +483,8 @@ static void get_vdec_decode_parameters(struct vdec_h264_slice_inst *inst)
 
 	memcpy(&inst->vsi_ctx.h264_slice_params, slice_param,
 	       sizeof(inst->vsi_ctx.h264_slice_params));
+
+	return (dec_params->nal_ref_idc << 5) | ((dec_params->flags & V4L2_H264_DECODE_PARAM_FLAG_IDR_PIC) ? 0x5 : 0x1);
 }
 
 static unsigned int get_mv_buf_size(unsigned int width, unsigned int height)
@@ -672,29 +674,17 @@ static void vdec_h264_slice_deinit(void *h_vdec)
 	kfree(inst);
 }
 
-static int find_start_code(unsigned char *data, unsigned int data_sz)
-{
-	if (data_sz > 3 && data[0] == 0 && data[1] == 0 && data[2] == 1)
-		return 3;
-
-	if (data_sz > 4 && data[0] == 0 && data[1] == 0 && data[2] == 0 &&
-	    data[3] == 1)
-		return 4;
-
-	return -1;
-}
-
 static int vdec_h264_slice_decode(void *h_vdec, struct mtk_vcodec_mem *bs,
 				  struct vdec_fb *fb, bool *res_chg)
 {
 	struct vdec_h264_slice_inst *inst =
 		(struct vdec_h264_slice_inst *)h_vdec;
 	struct vdec_vpu_inst *vpu = &inst->vpu;
-	int nal_start_idx = 0, err = 0;
 	uint32_t data[2];
-	unsigned char *buf;
 	uint64_t y_fb_dma;
 	uint64_t c_fb_dma;
+	u8 nal;
+	int err;
 
 	mtk_vcodec_debug(inst, "+ [%d] FB y_dma=%llx c_dma=%llx va=%p",
 			 ++inst->num_nalu, y_fb_dma, c_fb_dma, fb);
@@ -706,20 +696,15 @@ static int vdec_h264_slice_decode(void *h_vdec, struct mtk_vcodec_mem *bs,
 	y_fb_dma = fb ? (u64)fb->base_y.dma_addr : 0;
 	c_fb_dma = fb ? (u64)fb->base_c.dma_addr : 0;
 
-	buf = (unsigned char *)bs->va;
-	nal_start_idx = find_start_code(buf, bs->size);
-	if (nal_start_idx < 0)
-		goto err_free_fb_out;
-
-	data[0] = bs->size;
-	data[1] = buf[nal_start_idx];
-
 	inst->vsi_ctx.dec.bs_dma = (uint64_t)bs->dma_addr;
 	inst->vsi_ctx.dec.y_fb_dma = y_fb_dma;
 	inst->vsi_ctx.dec.c_fb_dma = c_fb_dma;
 	inst->vsi_ctx.dec.vdec_fb_va = (u64)(uintptr_t)fb;
 
-	get_vdec_decode_parameters(inst);
+	nal = get_vdec_decode_parameters(inst);
+	data[0] = bs->size;
+	data[1] = nal;
+
 	*res_chg = inst->vsi_ctx.dec.resolution_changed;
 	if (*res_chg) {
 		mtk_vcodec_debug(inst, "- resolution changed -");
