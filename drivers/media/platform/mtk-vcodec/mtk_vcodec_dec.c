@@ -884,26 +884,6 @@ static void m2mops_vdec_job_abort(void *priv)
 	ctx->state = MTK_STATE_ABORT;
 }
 
-int mtk_vdec_g_v_ctrl(struct v4l2_ctrl *ctrl)
-{
-	struct mtk_vcodec_ctx *ctx = ctrl_to_ctx(ctrl);
-	int ret = 0;
-
-	switch (ctrl->id) {
-	case V4L2_CID_MIN_BUFFERS_FOR_CAPTURE:
-		if (ctx->state >= MTK_STATE_HEADER) {
-			ctrl->val = ctx->dpb_size;
-		} else {
-			mtk_v4l2_debug(0, "Seqinfo not ready");
-			ctrl->val = 0;
-		}
-		break;
-	default:
-		ret = -EINVAL;
-	}
-	return ret;
-}
-
 const struct v4l2_m2m_ops mtk_vdec_m2m_ops = {
 	.device_run	= m2mops_vdec_device_run,
 	.job_ready	= m2mops_vdec_job_ready,

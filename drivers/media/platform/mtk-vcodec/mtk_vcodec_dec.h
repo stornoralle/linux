@@ -81,8 +81,6 @@ int mtk_vcodec_dec_queue_init(void *priv, struct vb2_queue *src_vq,
 void mtk_vcodec_dec_set_default_params(struct mtk_vcodec_ctx *ctx);
 void mtk_vcodec_dec_release(struct mtk_vcodec_ctx *ctx);
 
-int mtk_vdec_g_v_ctrl(struct v4l2_ctrl *ctrl);
-
 /*
  * VB2 ops
  */

@@ -579,6 +579,26 @@ static void vb2ops_vdec_stateful_buf_queue(struct vb2_buffer *vb)
 	mtk_vdec_queue_res_chg_event(ctx);
 }
 
+static int mtk_vdec_g_v_ctrl(struct v4l2_ctrl *ctrl)
+{
+	struct mtk_vcodec_ctx *ctx = ctrl_to_ctx(ctrl);
+	int ret = 0;
+
+	switch (ctrl->id) {
+	case V4L2_CID_MIN_BUFFERS_FOR_CAPTURE:
+		if (ctx->state >= MTK_STATE_HEADER) {
+			ctrl->val = ctx->dpb_size;
+		} else {
+			mtk_v4l2_debug(0, "Seqinfo not ready");
+			ctrl->val = 0;
+		}
+		break;
+	default:
+		ret = -EINVAL;
+	}
+	return ret;
+}
+
 static const struct v4l2_ctrl_ops mtk_vcodec_dec_ctrl_ops = {
 	.g_volatile_ctrl = mtk_vdec_g_v_ctrl,
 };

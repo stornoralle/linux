@@ -342,13 +342,8 @@ static int mtk_vdec_flush_decoder(struct mtk_vcodec_ctx *ctx)
 	return vdec_if_decode(ctx, NULL, NULL, &res_chg);
 }
 
-static const struct v4l2_ctrl_ops mtk_vcodec_dec_ctrl_ops = {
-	.g_volatile_ctrl = mtk_vdec_g_v_ctrl,
-};
-
 static int mtk_vcodec_dec_ctrls_setup(struct mtk_vcodec_ctx *ctx)
 {
-	struct v4l2_ctrl *ctrl;
 	unsigned int i;
 
 	v4l2_ctrl_handler_init(&ctx->ctrl_hdl, NUM_CTRLS);
@@ -356,12 +351,6 @@ static int mtk_vcodec_dec_ctrls_setup(struct mtk_vcodec_ctx *ctx)
 		mtk_v4l2_err("v4l2_ctrl_handler_init failed\n");
 		return ctx->ctrl_hdl.error;
 	}
-
-	ctrl = v4l2_ctrl_new_std(&ctx->ctrl_hdl,
-				&mtk_vcodec_dec_ctrl_ops,
-				V4L2_CID_MIN_BUFFERS_FOR_CAPTURE,
-				0, 32, 1, 1);
-	ctrl->flags |= V4L2_CTRL_FLAG_VOLATILE;
 
 	for (i = 0; i < NUM_CTRLS; i++) {
 		struct v4l2_ctrl_config cfg = mtk_stateless_controls[i].cfg;
