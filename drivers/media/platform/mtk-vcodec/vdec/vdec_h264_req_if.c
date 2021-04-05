@@ -695,7 +695,6 @@ static int vdec_h264_slice_decode(void *h_vdec, struct mtk_vcodec_mem *bs,
 	struct vdec_h264_slice_inst *inst =
 		(struct vdec_h264_slice_inst *)h_vdec;
 	struct vdec_vpu_inst *vpu = &inst->vpu;
-	struct mtk_video_dec_buf *src_buf_info;
 	int nal_start_idx = 0, err = 0;
 	uint32_t nal_type, data[2];
 	unsigned char *buf;
@@ -708,8 +707,6 @@ static int vdec_h264_slice_decode(void *h_vdec, struct mtk_vcodec_mem *bs,
 	/* bs NULL means flush decoder */
 	if (bs == NULL)
 		return vpu_dec_reset(vpu);
-
-	src_buf_info = container_of(bs, struct mtk_video_dec_buf, bs_buffer);
 
 	y_fb_dma = fb ? (u64)fb->base_y.dma_addr : 0;
 	c_fb_dma = fb ? (u64)fb->base_c.dma_addr : 0;
