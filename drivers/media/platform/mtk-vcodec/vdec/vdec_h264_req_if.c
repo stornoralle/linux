@@ -13,11 +13,6 @@
 #include "../vdec_vpu_if.h"
 #include "../vdec_drv_base.h"
 
-#define NAL_NON_IDR_SLICE			0x01
-#define NAL_IDR_SLICE				0x05
-#define NAL_H264_PPS				0x08
-#define NAL_TYPE(value)				((value) & 0x1F)
-
 #define BUF_PREDICTION_SZ			(64 * 4096)
 #define MB_UNIT_LEN				16
 
@@ -233,7 +228,7 @@ static void get_h264_dpb_list(struct vdec_h264_slice_inst *inst,
 	vq = v4l2_m2m_get_vq(inst->ctx->m2m_ctx,
 		V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
 
-	for (index = 0; index < 16; index++) {
+	for (index = 0; index < ARRAY_SIZE(slice_param->decode_params.dpb); index++) {
 		const struct slice_h264_dpb_entry *dpb;
 		int vb2_index;
 
@@ -696,7 +691,7 @@ static int vdec_h264_slice_decode(void *h_vdec, struct mtk_vcodec_mem *bs,
 		(struct vdec_h264_slice_inst *)h_vdec;
 	struct vdec_vpu_inst *vpu = &inst->vpu;
 	int nal_start_idx = 0, err = 0;
-	uint32_t nal_type, data[2];
+	uint32_t data[2];
 	unsigned char *buf;
 	uint64_t y_fb_dma;
 	uint64_t c_fb_dma;
@@ -718,9 +713,6 @@ static int vdec_h264_slice_decode(void *h_vdec, struct mtk_vcodec_mem *bs,
 
 	data[0] = bs->size;
 	data[1] = buf[nal_start_idx];
-	nal_type = NAL_TYPE(buf[nal_start_idx]);
-	mtk_vcodec_debug(inst, "\n + NALU[%d] type %d +\n", inst->num_nalu,
-			 nal_type);
 
 	inst->vsi_ctx.dec.bs_dma = (uint64_t)bs->dma_addr;
 	inst->vsi_ctx.dec.y_fb_dma = y_fb_dma;
@@ -745,20 +737,16 @@ static int vdec_h264_slice_decode(void *h_vdec, struct mtk_vcodec_mem *bs,
 	if (err)
 		goto err_free_fb_out;
 
-	if (nal_type == NAL_NON_IDR_SLICE || nal_type == NAL_IDR_SLICE) {
-		/* wait decoder done interrupt */
-		err = mtk_vcodec_wait_for_done_ctx(inst->ctx,
-						   MTK_INST_IRQ_RECEIVED,
-						   WAIT_INTR_TIMEOUT_MS);
-		if (err)
-			goto err_free_fb_out;
-
-		vpu_dec_end(vpu);
-	}
+	/* wait decoder done interrupt */
+	err = mtk_vcodec_wait_for_done_ctx(inst->ctx,
+					   MTK_INST_IRQ_RECEIVED,
+					   WAIT_INTR_TIMEOUT_MS);
+	if (err)
+		goto err_free_fb_out;
+	vpu_dec_end(vpu);
 
 	memcpy(&inst->vsi_ctx, inst->vpu.vsi, sizeof(inst->vsi_ctx));
-	mtk_vcodec_debug(inst, "\n - NALU[%d] type=%d -\n", inst->num_nalu,
-			 nal_type);
+	mtk_vcodec_debug(inst, "\n - NALU[%d] -\n", inst->num_nalu, nal_type);
 	return 0;
 
 err_free_fb_out:
