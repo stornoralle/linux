@@ -395,6 +395,9 @@ static void mtk_init_vdec_params(struct mtk_vcodec_ctx *ctx)
 
 static int vb2ops_vdec_out_buf_validate(struct vb2_buffer *vb)
 {
+	struct vb2_v4l2_buffer *vbuf = to_vb2_v4l2_buffer(vb);
+
+	vbuf->field = V4L2_FIELD_NONE;
 	return 0;
 }
 
